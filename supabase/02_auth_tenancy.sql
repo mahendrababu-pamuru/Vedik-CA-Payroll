@@ -9,9 +9,21 @@ create table if not exists subscriptions(id uuid primary key default gen_random_
 alter table employees add column if not exists tenant_id uuid references tenants(id) on delete cascade;
 alter table payroll_runs add column if not exists tenant_id uuid references tenants(id) on delete cascade;
 alter table audit_log add column if not exists tenant_id uuid references tenants(id) on delete cascade;
+alter table salary_structures add column if not exists tenant_id uuid references tenants(id) on delete cascade;
+alter table attendance add column if not exists tenant_id uuid references tenants(id) on delete cascade;
+alter table advances add column if not exists tenant_id uuid references tenants(id) on delete cascade;
+alter table payroll_lines add column if not exists tenant_id uuid references tenants(id) on delete cascade;
+alter table advance_recoveries add column if not exists tenant_id uuid references tenants(id) on delete cascade;
+alter table employees alter column organisation_id drop not null;
+alter table payroll_runs alter column organisation_id drop not null;
 create index if not exists tenant_members_user_idx on tenant_members(user_id);
 create index if not exists employees_tenant_idx on employees(tenant_id);
 create index if not exists payroll_runs_tenant_idx on payroll_runs(tenant_id);
+create index if not exists salary_structures_tenant_idx on salary_structures(tenant_id);
+create index if not exists attendance_tenant_idx on attendance(tenant_id,payroll_month);
+create index if not exists advances_tenant_idx on advances(tenant_id,status);
+create index if not exists payroll_lines_tenant_idx on payroll_lines(tenant_id);
+create unique index if not exists payroll_runs_tenant_month_uq on payroll_runs(tenant_id,payroll_month);
 
 create or replace function is_platform_admin() returns boolean language sql security definer set search_path=public stable as $$select exists(select 1 from platform_admins where user_id=auth.uid())$$;
 create or replace function is_tenant_member(p_tenant uuid) returns boolean language sql security definer set search_path=public stable as $$select exists(select 1 from tenant_members where tenant_id=p_tenant and user_id=auth.uid() and status='active')$$;
@@ -35,3 +47,8 @@ insert into platform_admins(user_id) select id from auth.users where lower(email
 -- Apply tenant isolation to payroll domain tables.
 drop policy if exists employees_tenant_access on employees;create policy employees_tenant_access on employees for all to authenticated using(is_platform_admin() or is_tenant_member(tenant_id)) with check(is_platform_admin() or is_tenant_member(tenant_id));
 drop policy if exists payroll_runs_tenant_access on payroll_runs;create policy payroll_runs_tenant_access on payroll_runs for all to authenticated using(is_platform_admin() or is_tenant_member(tenant_id)) with check(is_platform_admin() or is_tenant_member(tenant_id));
+drop policy if exists salary_structures_tenant_access on salary_structures;create policy salary_structures_tenant_access on salary_structures for all to authenticated using(is_platform_admin() or is_tenant_member(tenant_id)) with check(is_platform_admin() or is_tenant_member(tenant_id));
+drop policy if exists attendance_tenant_access on attendance;create policy attendance_tenant_access on attendance for all to authenticated using(is_platform_admin() or is_tenant_member(tenant_id)) with check(is_platform_admin() or is_tenant_member(tenant_id));
+drop policy if exists advances_tenant_access on advances;create policy advances_tenant_access on advances for all to authenticated using(is_platform_admin() or is_tenant_member(tenant_id)) with check(is_platform_admin() or is_tenant_member(tenant_id));
+drop policy if exists payroll_lines_tenant_access on payroll_lines;create policy payroll_lines_tenant_access on payroll_lines for all to authenticated using(is_platform_admin() or is_tenant_member(tenant_id)) with check(is_platform_admin() or is_tenant_member(tenant_id));
+drop policy if exists advance_recoveries_tenant_access on advance_recoveries;create policy advance_recoveries_tenant_access on advance_recoveries for all to authenticated using(is_platform_admin() or is_tenant_member(tenant_id)) with check(is_platform_admin() or is_tenant_member(tenant_id));
