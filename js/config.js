@@ -1,1 +1,1 @@
-const SUPABASE_URL='YOUR_SUPABASE_URL';const SUPABASE_PUBLISHABLE_KEY='YOUR_SUPABASE_PUBLISHABLE_KEY';window.sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const SUPABASE_URL='https://bltaxcygiygcosflmtcm.supabase.co';const SUPABASE_PUBLISHABLE_KEY='sb_publishable_Mv-O3IJCTxl76_HGk_Af1Q_gz6quBd_';window.sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
