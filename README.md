@@ -25,3 +25,14 @@ Open `index.html`, or serve the folder with any static server. Demo data is incl
 ## Free deployment
 
 The static package can be deployed on GitHub Pages, Netlify, Vercel or Cloudflare Pages. For live Supabase data, configure authentication and RLS first.
+
+## Authentication, vendors and roles
+
+1. Run `supabase/schema.sql` and then `supabase/02_auth_tenancy.sql`.
+2. In Supabase Authentication, create the platform-admin user for `suni.tpt@gmail.com`; do not store its password in GitHub.
+3. Run `02_auth_tenancy.sql` only after that Auth user exists so it can be added to `platform_admins`.
+4. Put the Supabase Project URL and publishable key in `js/config.js`. Never use a secret/service-role key there.
+5. Deploy the `admin-users` Edge Function from `supabase/functions/admin-users/index.ts`. Its service-role key remains a Supabase-managed server secret.
+6. Add the deployed Vercel URL to Supabase Authentication → URL Configuration → Redirect URLs.
+
+Platform administrators can create vendors and subscriptions. Vendor administrators can invite users and assign organisation-specific roles. Tenant membership and RLS isolate each vendor's payroll records.
