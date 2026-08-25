@@ -1,6 +1,7 @@
 -- Subscription cycles, self-service trial registration and organisation settings.
 -- Run after supabase/02_auth_tenancy.sql.
 alter table subscriptions drop constraint if exists subscriptions_plan_check;
+update subscriptions set plan=case plan when 'starter' then 'monthly' when 'professional' then 'quarterly' when 'enterprise' then 'annual' else plan end;
 alter table subscriptions add constraint subscriptions_plan_check check(plan in('trial','monthly','quarterly','annual'));
 alter table subscriptions add column if not exists amount numeric(12,2) not null default 0;
 alter table subscriptions add column if not exists activated_at timestamptz;
@@ -44,8 +45,8 @@ drop policy if exists prices_admin on subscription_prices;
 create policy prices_admin on subscription_prices for all to authenticated using(is_platform_admin()) with check(is_platform_admin());
 drop policy if exists organisation_settings_access on organisation_settings;
 create policy organisation_settings_access on organisation_settings for all to authenticated
-using(is_platform_admin() or is_tenant_member(tenant_id))
-with check(is_platform_admin() or is_tenant_member(tenant_id));
+using(is_platform_admin() or tenant_role(tenant_id)='vendor_admin')
+with check(is_platform_admin() or tenant_role(tenant_id)='vendor_admin');
 
 create or replace function provision_payroll_trial_user()
 returns trigger
